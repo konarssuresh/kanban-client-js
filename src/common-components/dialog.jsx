@@ -1,0 +1,111 @@
+import { createPortal } from "react-dom";
+import { useRef, useEffect } from "react";
+import { motion } from "motion/react";
+import { Button } from "./button";
+
+const Dialog = ({ title, children, onClose, actions, icon }) => {
+  const dialogRef = useRef();
+
+  useEffect(() => {
+    const focusableElements = dialogRef.current.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    const handleKeyDown = function (e) {
+      if (e.key === "Tab") {
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      } else if (e.key === "Escape") {
+        console.log("escape pressed");
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+  return (
+    <div className="absolute top-0 left-0 w-[100vw] h-[100vh] z-1300 flex justify-center items-center ">
+      {/* overlay */}
+      <div
+        className="absolute inset-0 w-full h-full bg-black opacity-50"
+        onClick={onClose}
+      />
+      {/* content */}
+      <motion.div
+        layout
+        ref={dialogRef}
+        className="neutral bg-white flex flex-col z-1301 rounded-lg max-w-md m-4"
+        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 8, scale: 0.98 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+      >
+        <div className="p-5 flex flex-row gap-x-4 items-start">
+          <div className=" flex justify-center items-center w-10 h-10 px-2 bg-neutral-100 rounded-md">
+            {icon}
+          </div>
+          <div className="flex flex-col gap-[6px]">
+            <h4 className="text-neutral-950 text-preset-3">{title}</h4>
+            <p className="text-preset-5 text-neutral-700">{children}</p>
+          </div>
+        </div>
+        <hr className="text-neutral-100" />
+        <div className="py-4 px-5 flex justify-end gap-x-4">
+          {actions.map((action) => {
+            return (
+              <Button
+                key={action.text}
+                variant={action.variant}
+                onClick={action.onClick}
+              >
+                {action.text}
+              </Button>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+export const ModalDialog = ({
+  open,
+  title,
+  children,
+  onClose,
+  actions,
+  icon,
+  ...remaining
+}) => {
+  return (
+    <>
+      {open &&
+        createPortal(
+          <Dialog
+            title={title}
+            children={children}
+            onClose={onClose}
+            actions={actions}
+            icon={icon}
+            {...remaining}
+          />,
+          document.getElementById("modal-dialog")
+        )}
+    </>
+  );
+};

@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --color-red-*: initial;
+  --color-black-*: initial;
+  --color-grey-*: initial;
+  --color-purple-*: initial;
+  --color-white-*: initial;
+  --color-black: #000112;
+  --color-white: #ffffff;
+  /* very dark grey */
+  --color-grey-900: #20212c;
+  /* dark grey */
+  --color-grey-700: #2b2c37;
+  /* lines dark */
+  --color-grey-500: #3e3f4e;
+  /* medium grey */
+  --color-grey-400: #828fa3;
+  /* lines light */
+  --color-grey-300: #e4ebfa;
+  /* light grey */
+  --color-grey-100: #f4f7fd;
+  /* red main */
+  --color-red-700: #ea5555;
+  /* red hover */
+  --color-red-500: #ff9898;
+  /* purple main */
+  --color-purple-700: #635fc7;
+  /* purple hover */
+  --color-purple-500: #a8a4ff;
+
+  --text-xl-*: initial;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 1.875rem;
+
+  --text-lg-*: initial;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.4375rem;
+
+  --text-md-*: initial;
+  --text-md: 1rem;
+  --text-md--line-height: 1.1875rem;
+
+  --text-sm-*: initial;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1rem;
+}
+
+body {
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
