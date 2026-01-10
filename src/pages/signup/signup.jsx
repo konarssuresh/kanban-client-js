@@ -39,7 +39,6 @@ const Signup = () => {
           <h1 className="text-preset-1 text-neutral-950 text-center">
             Create Your Account
           </h1>
-          <h5 className="text-preset-5 text-center text-neutral-500">si</h5>
         </div>
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col md:flex-row gap-4 md:gap-2">
