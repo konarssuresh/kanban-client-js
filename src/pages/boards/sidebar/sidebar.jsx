@@ -1,6 +1,7 @@
 import { clsx } from "clsx";
+import { AnimatePresence, motion as Motion } from "motion/react";
 import { useAppStore } from "../../../store/useAppStore";
-import LogoDark from "../../../common-components/Icons/LogoDark";
+import LogoDark from "../../../common-components/icons/LogoDark";
 
 import BoardsList from "./boards-list";
 import HideSidebarButton from "./hide-sidebar-button";
@@ -12,9 +13,7 @@ const Sidebar = () => {
   if (!sidebarOpen) return <ShowSidebar />;
 
   const sidebarClasses = clsx({
-    "flex flex-col gap-4 border-r border-grey-400": true,
-    "w-65": true,
-    "lg:w-75": true,
+    "flex flex-col gap-4 border-r border-grey-400 h-full": true,
   });
 
   const logoClasses = clsx({
@@ -26,12 +25,25 @@ const Sidebar = () => {
   });
 
   return (
-    <div className={`${sidebarClasses}`}>
-      <div className={logoContainerClasses}>
-        <LogoDark className={logoClasses} />
-      </div>
-      <BoardsList />
-      <HideSidebarButton />
+    <div className="w-65 lg:w-75 h-screen flex-none">
+      <AnimatePresence>
+        {sidebarOpen && (
+          <Motion.div
+            initial={{ x: -300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`${sidebarClasses}`}
+          >
+            <div className={logoContainerClasses}>
+              <LogoDark className={logoClasses} />
+            </div>
+            <BoardsList />
+            <HideSidebarButton />
+          </Motion.div>
+        )}
+      </AnimatePresence>
+      {!sidebarOpen && <ShowSidebar />}
     </div>
   );
 };

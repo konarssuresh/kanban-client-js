@@ -1,10 +1,11 @@
 import Header from "./header";
+import Content from "./content/content";
 
 const BoardContent = () => {
   return (
-    <div className="h-full grow flex flex-col">
+    <div className="h-full w-full overflow-auto flex flex-col grow">
       <Header />
-      board content
+      <Content />
     </div>
   );
 };

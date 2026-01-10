@@ -45,8 +45,12 @@ const BoardsList = () => {
         const boardClasses = getBoardClasses(board);
 
         return (
-          <nav onClick={() => setSelectedBoard(board)} className={boardClasses}>
-            <div className="flex items-center gap-4" key={board?.id}>
+          <nav
+            key={board.id}
+            onClick={() => setSelectedBoard(board)}
+            className={boardClasses}
+          >
+            <div className="flex items-center gap-4 capitalize" key={board?.id}>
               <IconBoard /> <span>{board?.name}</span>
             </div>
           </nav>
