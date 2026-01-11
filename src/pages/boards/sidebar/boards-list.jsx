@@ -4,6 +4,8 @@ import IconBoard from "../../../common-components/icons/IconBoard";
 import { useFetchBoardsQuery } from "../hooks/useFetchBoardsQuery";
 import { useBoardStore } from "../../../store/useBoardStore";
 import { useEffect } from "react";
+import { showDialog } from "../../../common-components/dialog-container";
+import AddNewBoardDialog from "./add-new-board-dialog";
 
 const BoardsList = () => {
   const { data: boards, isLoading } = useFetchBoardsQuery();
@@ -34,6 +36,16 @@ const BoardsList = () => {
     });
   };
 
+  const handleAddNewBoard = () => {
+    const closeDialog = showDialog(
+      <AddNewBoardDialog
+        onClose={() => {
+          closeDialog();
+        }}
+      />
+    );
+  };
+
   return (
     <div className={listContainer}>
       <div className={headingClasses}>
@@ -56,8 +68,11 @@ const BoardsList = () => {
           </nav>
         );
       })}
-      <nav className={getBoardClasses({ id: "new" })}>
-        <div className="flex items-center gap-4" onClick={() => {}}>
+      <nav
+        onClick={handleAddNewBoard}
+        className={getBoardClasses({ id: "new" })}
+      >
+        <div className="flex items-center gap-4">
           <IconBoard className="text-purple-700 hover:text-white" />
           <span className="text-purple-700 hover:text-white">
             + Create New Board

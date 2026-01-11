@@ -6,6 +6,8 @@ export const Button = ({
   children,
   className = "",
   onClick,
+  disabled = false,
+  ...rest
 }) => {
   const backgroundClasses = clsx({
     "bg-purple-700 hover:bg-purple-500": variant === "primary",
@@ -21,11 +23,15 @@ export const Button = ({
   });
 
   const genericClasses = clsx({
-    "px-4 py-2 rounded-full cursor-pointer": true,
+    "px-4 py-3 rounded-full": true,
+    "disabled:opacity-50 disabled:cursor-not-allowed": disabled,
+    "cursor-pointer": !disabled,
   });
 
   return (
     <button
+      {...rest}
+      disabled={disabled}
       onClick={onClick}
       className={`${backgroundClasses} ${textClasses} ${genericClasses} ${className}`}
     >

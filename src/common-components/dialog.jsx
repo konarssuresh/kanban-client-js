@@ -1,9 +1,9 @@
 import { createPortal } from "react-dom";
 import { useRef, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion as Motion } from "motion/react";
 import { Button } from "./button";
 
-const Dialog = ({ title, children, onClose, actions, icon }) => {
+const Dialog = ({ title, children, onClose, actions }) => {
   const dialogRef = useRef();
 
   useEffect(() => {
@@ -46,27 +46,24 @@ const Dialog = ({ title, children, onClose, actions, icon }) => {
         onClick={onClose}
       />
       {/* content */}
-      <motion.div
+      <Motion.div
         layout
         ref={dialogRef}
-        className="neutral bg-white flex flex-col z-1301 rounded-lg max-w-md m-4"
+        className="neutral bg-white flex flex-col z-1301 min-w-120 max-h-[80vh] overflow-y-auto rounded-lg m-4"
         initial={{ opacity: 0, y: 8, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 8, scale: 0.98 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
       >
         <div className="p-5 flex flex-row gap-x-4 items-start">
-          <div className=" flex justify-center items-center w-10 h-10 px-2 bg-neutral-100 rounded-md">
-            {icon}
-          </div>
           <div className="flex flex-col gap-[6px]">
-            <h4 className="text-neutral-950 text-preset-3">{title}</h4>
-            <p className="text-preset-5 text-neutral-700">{children}</p>
+            <h4 className="text-black text-lg font-bold">{title}</h4>
+            {children}
           </div>
         </div>
         <hr className="text-neutral-100" />
         <div className="py-4 px-5 flex justify-end gap-x-4">
-          {actions.map((action) => {
+          {actions?.map((action) => {
             return (
               <Button
                 key={action.text}
@@ -78,7 +75,7 @@ const Dialog = ({ title, children, onClose, actions, icon }) => {
             );
           })}
         </div>
-      </motion.div>
+      </Motion.div>
     </div>
   );
 };
