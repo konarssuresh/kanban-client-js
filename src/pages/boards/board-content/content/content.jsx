@@ -34,7 +34,7 @@ const Content = () => {
       {selectedBoard.columns.map((column) => (
         <Column key={column.id} column={column} />
       ))}
-      <AddColumn />
+      <AddColumn board={selectedBoard} />
     </div>
   );
 };

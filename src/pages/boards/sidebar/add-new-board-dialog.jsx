@@ -55,10 +55,6 @@ const AddNewBoardDialog = ({ onClose }) => {
     });
   };
 
-  console.log(formState.errors?.fieldArray?.root);
-  console.log(formState.errors);
-  console.log(formState.errors?.columns);
-
   return (
     <ModalDialog open title="Add New Board" onClose={onClose}>
       <div className={formContainerClasses}>
@@ -122,7 +118,7 @@ const AddNewBoardDialog = ({ onClose }) => {
                 );
               })}
               <Button
-                disabled={!isDirty || !isEmpty(errors) || isPending}
+                disabled={isPending}
                 variant="secondary"
                 onClick={() => append({ name: "" })}
               >
