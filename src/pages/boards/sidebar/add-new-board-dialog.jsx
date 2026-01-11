@@ -1,13 +1,13 @@
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import isEmpty from "lodash/isEmpty";
 
 import { useAddBoardMutation } from "../hooks/useAddBoardMutation";
 import { ModalDialog } from "../../../common-components/dialog";
-import IconCross from "../../../common-components/icons/IconCross";
 import { Button } from "../../../common-components/button";
 import { TextField } from "../../../common-components/text-field";
+import { FieldArray } from "../../../common-components/field-array";
 
 const AddNewBoardDialog = ({ onClose }) => {
   const queryClient = useQueryClient();
@@ -24,18 +24,8 @@ const AddNewBoardDialog = ({ onClose }) => {
 
   const { isDirty, errors } = formState;
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "columns",
-    rules: { minLength: 1 },
-  });
-
   const formContainerClasses = clsx({
     "flex flex-col gap-4 w-120": true,
-  });
-
-  const fieldArrayContainerClasses = clsx({
-    "flex flex-col gap-4": true,
   });
 
   const handleSubmit = () => {
@@ -80,53 +70,17 @@ const AddNewBoardDialog = ({ onClose }) => {
           }}
           rules={{ required: "Board name is required" }}
         />
-        <div className={fieldArrayContainerClasses}>
-          <div className="flex flex-col gap-2 w-full">
-            <label className="text-grey-400 text-md">Board Columns</label>
-            <div className="flex flex-col gap-2">
-              {fields.map((field, index) => {
-                return (
-                  <div key={index} className="flex flex-row gap-2 items-center">
-                    <Controller
-                      name={`columns.${index}.name`}
-                      control={control}
-                      render={({
-                        field: { onChange, onBlur, value, ref },
-                        fieldState: { error },
-                      }) => {
-                        return (
-                          <TextField
-                            isError={!isEmpty(error)}
-                            helperText={error?.message}
-                            placeholder="Enter column name"
-                            value={value}
-                            onChange={onChange}
-                            onBlur={onBlur}
-                            ref={ref}
-                          />
-                        );
-                      }}
-                      rules={{ required: "Column name is required" }}
-                    />
-                    <button
-                      className={clsx("text-grey-400 cursor-pointer")}
-                      onClick={() => remove(index)}
-                    >
-                      <IconCross />
-                    </button>
-                  </div>
-                );
-              })}
-              <Button
-                disabled={isPending}
-                variant="secondary"
-                onClick={() => append({ name: "" })}
-              >
-                + Add New Column
-              </Button>
-            </div>
-          </div>
-        </div>
+        <FieldArray
+          form={form}
+          name="columns"
+          rules={{ minLength: 1 }}
+          disabled={isPending}
+          addLabel="Add New Column"
+          addValuePlaceholder={{ name: "" }}
+          fieldPlaceholder="Enter column name"
+          label="Board Columns"
+          fieldIdentifier="name"
+        />
         <Button
           disabled={!isDirty || !isEmpty(errors) || isPending}
           variant="primary"

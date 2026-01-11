@@ -3,7 +3,9 @@ import { useAppStore } from "../../../store/useAppStore";
 import { useBoardStore } from "../../../store/useBoardStore";
 import LogoDark from "../../../common-components/icons/LogoDark";
 import IconVerticalEllipsis from "../../../common-components/icons/IconVerticalEllipsis";
+import { showDialog } from "../../../common-components/dialog-container";
 import { Button } from "../../../common-components/button";
+import AddTaskDialog from "../board-content/add-task-dialog";
 
 const Header = () => {
   const { sidebarOpen } = useAppStore();
@@ -28,6 +30,17 @@ const Header = () => {
     "flex items-center gap-3": true,
   });
 
+  const handleAddTask = () => {
+    const closeDialog = showDialog(
+      <AddTaskDialog
+        board={selectedBoard}
+        onClose={() => {
+          closeDialog();
+        }}
+      />
+    );
+  };
+
   return (
     <div className={headerClasses}>
       <div className={titleContainer}>
@@ -36,7 +49,7 @@ const Header = () => {
       </div>
 
       <div className={addTaskContainer}>
-        <Button variant="primary" size="large">
+        <Button onClick={handleAddTask} variant="primary" size="large">
           + Add New Task
         </Button>
         <IconVerticalEllipsis className="text-grey-400" />
