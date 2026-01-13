@@ -1,11 +1,18 @@
 import { clsx } from "clsx";
 import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import compact from "lodash/compact";
 import Task from "./task";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { useMoveTaskMutation } from "../../hooks/useMoveTaskMutation";
+import { useBoardStore } from "../../../../store/useBoardStore";
 
 const Column = ({ column }) => {
+  const { setSelectedBoard } = useBoardStore();
+  const queryClient = useQueryClient();
   const columnsContainerRef = useRef();
   const [isElementBeingDragged, setIsElementBeingDragged] = useState(false);
+  const { mutate } = useMoveTaskMutation({ boardId: column.board });
 
   const columnContainer = clsx({
     "w-70 flex-shrink-0": true,
@@ -35,9 +42,53 @@ const Column = ({ column }) => {
 
     const cleanup = dropTargetForElements({
       element,
+      getData: () => {
+        return column;
+      },
       // canDrop
-      onDrop: ({ source }) => {
-        console.log(source);
+      onDrop: ({ source, location }) => {
+        if (source.data) {
+          console.log(source?.data);
+          const fromColumnId = source.data?.column;
+          const toColumnId = location.current.dropTargets?.[0]?.data.id;
+          mutate(
+            {
+              fromColumnId: fromColumnId,
+              toColumnId: toColumnId,
+              taskId: source.data._id,
+            },
+            {
+              onSuccess: (data) => {
+                queryClient.setQueryData(["boards"], (oldData) => {
+                  const newData = oldData.map((b) => {
+                    if (b.id === data.board) {
+                      const newColumns = b.columns.map((c) => {
+                        if (c.id === fromColumnId) {
+                          let filteredTasks = [...c.tasks];
+                          filteredTasks = filteredTasks.filter(
+                            (t) => t._id !== data._id
+                          );
+                          return { ...c, tasks: filteredTasks };
+                        } else if (c.id === toColumnId) {
+                          let newTasks = [...c.tasks, data];
+                          return { ...c, tasks: newTasks };
+                        } else {
+                          return { ...c };
+                        }
+                      });
+                      setSelectedBoard({ ...b, columns: compact(newColumns) });
+                      return { ...b, columns: compact(newColumns) };
+                    }
+
+                    return { ...b };
+                  });
+
+                  return [...newData];
+                });
+              },
+            }
+          );
+        }
         setIsElementBeingDragged(false);
       },
       onDragEnter: () => {
@@ -49,7 +100,7 @@ const Column = ({ column }) => {
     });
 
     return cleanup;
-  }, [column]);
+  }, [column, mutate, setSelectedBoard]);
 
   console.log(`isBeingDraggedInto - ` + isElementBeingDragged + column?.name);
 
