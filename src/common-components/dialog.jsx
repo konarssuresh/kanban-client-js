@@ -8,7 +8,7 @@ const Dialog = ({ title, children, onClose, actions }) => {
 
   useEffect(() => {
     const focusableElements = dialogRef.current.querySelectorAll(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
 
     const firstElement = focusableElements[0];
@@ -101,7 +101,7 @@ export const ModalDialog = ({
             icon={icon}
             {...remaining}
           />,
-          document.getElementById("modal-dialog")
+          document.getElementById("modal-dialog"),
         )}
     </>
   );

@@ -2,10 +2,13 @@ import { clsx } from "clsx";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import compact from "lodash/compact";
-import Task from "./task";
+import Task from "./task/task";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useMoveTaskMutation } from "../../hooks/useMoveTaskMutation";
 import { useBoardStore } from "../../../../store/useBoardStore";
+import IconVerticalEllipsis from "../../../../common-components/icons/IconVerticalEllipsis";
+import { showDialog } from "../../../../common-components/dialog-container";
+import DeleteColumnDialog from "./delete-column-dialog";
 
 const Column = ({ column }) => {
   const { setSelectedBoard } = useBoardStore();
@@ -66,7 +69,7 @@ const Column = ({ column }) => {
                         if (c.id === fromColumnId) {
                           let filteredTasks = [...c.tasks];
                           filteredTasks = filteredTasks.filter(
-                            (t) => t._id !== data._id
+                            (t) => t._id !== data._id,
                           );
                           return { ...c, tasks: filteredTasks };
                         } else if (c.id === toColumnId) {
@@ -86,7 +89,7 @@ const Column = ({ column }) => {
                   return [...newData];
                 });
               },
-            }
+            },
           );
         }
         setIsElementBeingDragged(false);
@@ -102,13 +105,43 @@ const Column = ({ column }) => {
     return cleanup;
   }, [column, mutate, setSelectedBoard]);
 
+  const handleDeleteColumn = () => {
+    const closeDialog = showDialog(
+      <DeleteColumnDialog
+        columnData={column}
+        onClose={() => {
+          closeDialog();
+        }}
+      />,
+    );
+  };
+
   console.log(`isBeingDraggedInto - ` + isElementBeingDragged + column?.name);
 
   return (
     <div className={columnContainer}>
-      <h4 className={columnTitleClasses}>
-        {column.name.toUpperCase()} {`(${column.tasks.length})`}
-      </h4>
+      <div className={clsx("flex flex-row align-center justify-between")}>
+        <h4 className={columnTitleClasses}>
+          {column.name.toUpperCase()} {`(${column.tasks.length})`}
+        </h4>
+        <details className="dropdown dropdown-end">
+          <summary className={clsx("btn p-0 m-0 h-2")}>
+            <IconVerticalEllipsis />
+          </summary>
+          <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+            <li>
+              <a
+                onClick={(e) => {
+                  handleDeleteColumn(e);
+                }}
+              >
+                Delete
+              </a>
+            </li>
+          </ul>
+        </details>
+      </div>
+
       <div className={tasksContainer} ref={columnsContainerRef}>
         {!isElementBeingDragged ? (
           <>

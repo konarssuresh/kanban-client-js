@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { useQueryClient } from "@tanstack/react-query";
 
 import IconBoard from "../../../common-components/icons/IconBoard";
 import { useFetchBoardsQuery } from "../hooks/useFetchBoardsQuery";
@@ -8,6 +9,7 @@ import { showDialog } from "../../../common-components/dialog-container";
 import AddNewBoardDialog from "./add-new-board-dialog";
 
 const BoardsList = () => {
+  const queryClient = useQueryClient();
   const { data: boards, isLoading } = useFetchBoardsQuery();
   const { selectedBoard, setSelectedBoard } = useBoardStore();
 
@@ -42,8 +44,19 @@ const BoardsList = () => {
         onClose={() => {
           closeDialog();
         }}
-      />
+      />,
     );
+  };
+
+  const handleBoardChange = (board) => {
+    if (selectedBoard !== null) {
+      queryClient.setQueryData(["boards"], (oldData) => {
+        return Array.isArray(oldData)
+          ? oldData.map((b) => (b?.id === selectedBoard.id ? selectedBoard : b))
+          : oldData;
+      });
+    }
+    setSelectedBoard(board);
   };
 
   return (
@@ -59,7 +72,7 @@ const BoardsList = () => {
         return (
           <nav
             key={board.id}
-            onClick={() => setSelectedBoard(board)}
+            onClick={() => handleBoardChange(board)}
             className={boardClasses}
           >
             <div className="flex items-center gap-4 capitalize" key={board?.id}>
