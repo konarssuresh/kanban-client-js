@@ -5,7 +5,7 @@ import validator from "validator";
 import isEmpty from "lodash/isEmpty";
 
 import { useSignup } from "../../hooks/useSignup";
-import LogoIcon from "../../common-components/Icons/LogoLight";
+import LogoIcon from "../../common-components/icons/LogoLight";
 import { TextField } from "../../common-components/text-field";
 import { Button } from "../../common-components/button";
 

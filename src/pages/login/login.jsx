@@ -6,7 +6,7 @@ import validator from "validator";
 
 import { useLogin } from "../../hooks/useLogin";
 
-import LogoLight from "../../common-components/Icons/LogoLight";
+import LogoLight from "../../common-components/icons/LogoLight";
 import { Button } from "../../common-components/button";
 import { TextField } from "../../common-components/text-field";
 
