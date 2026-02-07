@@ -364,6 +364,44 @@ const updateSubtaskInState = (state, subtaskId, isDone) => {
   };
 };
 
+const removeBoardFromState = (state, boardId) => {
+  const data = ensureState(state);
+  const board = data.boardsById[boardId];
+  if (!board) return data;
+
+  const columnsById = { ...data.columnsById };
+  const tasksById = { ...data.tasksById };
+  const subtasksById = { ...data.subtasksById };
+
+  (board.columnIds || []).forEach((columnId) => {
+    const column = columnsById[columnId];
+    if (column?.taskIds) {
+      column.taskIds.forEach((taskId) => {
+        const task = tasksById[taskId];
+        if (task?.subtaskIds) {
+          task.subtaskIds.forEach((subtaskId) => {
+            delete subtasksById[subtaskId];
+          });
+        }
+        delete tasksById[taskId];
+      });
+    }
+    delete columnsById[columnId];
+  });
+
+  const boardsById = { ...data.boardsById };
+  delete boardsById[boardId];
+
+  return {
+    ...data,
+    boardIds: (data.boardIds || []).filter((id) => id !== boardId),
+    boardsById,
+    columnsById,
+    tasksById,
+    subtasksById,
+  };
+};
+
 export {
   normalizeBoards,
   selectBoardList,
@@ -374,6 +412,7 @@ export {
   addTaskToState,
   removeColumnFromState,
   removeTaskFromState,
+  removeBoardFromState,
   moveTaskInState,
   updateSubtaskInState,
 };

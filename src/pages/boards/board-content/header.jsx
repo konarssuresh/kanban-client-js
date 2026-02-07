@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { useRef } from "react";
 import { useAppStore } from "../../../store/useAppStore";
 import { useBoardStore } from "../../../store/useBoardStore";
 import LogoDark from "../../../common-components/icons/LogoDark";
@@ -8,6 +9,7 @@ import { Button } from "../../../common-components/button";
 import AddTaskDialog from "../board-content/add-task-dialog";
 import { useFetchBoardsQuery } from "../hooks/useFetchBoardsQuery";
 import { selectBoardView } from "../../../store/boardEntities";
+import DeleteBoardDialog from "./delete-board-dialog";
 
 const Header = () => {
   const { sidebarOpen } = useAppStore();
@@ -33,6 +35,7 @@ const Header = () => {
   const addTaskContainer = clsx({
     "flex items-center gap-3": true,
   });
+  const menuRef = useRef(null);
 
   const handleAddTask = () => {
     if (!selectedBoard) {
@@ -40,6 +43,21 @@ const Header = () => {
     }
     const closeDialog = showDialog(
       <AddTaskDialog
+        board={selectedBoard}
+        onClose={() => {
+          closeDialog();
+        }}
+      />
+    );
+  };
+
+  const handleDeleteBoard = () => {
+    if (!selectedBoard) return;
+    if (menuRef.current) {
+      menuRef.current.open = false;
+    }
+    const closeDialog = showDialog(
+      <DeleteBoardDialog
         board={selectedBoard}
         onClose={() => {
           closeDialog();
@@ -64,7 +82,16 @@ const Header = () => {
         >
           + Add New Task
         </Button>
-        <IconVerticalEllipsis className="text-grey-400" />
+        <details className="dropdown dropdown-end" ref={menuRef}>
+          <summary className={clsx("btn p-0 m-0 h-2")}>
+            <IconVerticalEllipsis className="text-grey-400" />
+          </summary>
+          <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
+            <li>
+              <a onClick={handleDeleteBoard}>Delete Board</a>
+            </li>
+          </ul>
+        </details>
       </div>
     </div>
   );
