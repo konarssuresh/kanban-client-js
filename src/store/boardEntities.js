@@ -321,6 +321,7 @@ const moveTaskInState = (state, fromColumnId, toColumnId, task) => {
   const toColumn = data.columnsById[toColumnId];
   if (!fromColumn || !toColumn) return data;
   const existingTask = data.tasksById[taskId] || {};
+  const toTaskIds = toColumn.taskIds || [];
 
   return {
     ...data,
@@ -332,7 +333,9 @@ const moveTaskInState = (state, fromColumnId, toColumnId, task) => {
       },
       [toColumnId]: {
         ...toColumn,
-        taskIds: [...(toColumn.taskIds || []), taskId],
+        taskIds: toTaskIds.includes(taskId)
+          ? toTaskIds
+          : [...toTaskIds, taskId],
       },
     },
     tasksById: {

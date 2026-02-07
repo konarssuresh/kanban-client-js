@@ -1,7 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { API_BASE } from "../../../constants/apis";
+import { moveTaskInState } from "../../../store/boardEntities";
 
 export const useMoveTaskMutation = ({ boardId }) => {
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async (body) => {
       const { fromColumnId, toColumnId, taskId } = body;
@@ -23,6 +25,23 @@ export const useMoveTaskMutation = ({ boardId }) => {
       }
 
       return response.json();
+    },
+    onMutate: async (vars) => {
+      const previous = queryClient.getQueryData(["boards"]);
+      queryClient.setQueryData(["boards"], (oldData) =>
+        moveTaskInState(oldData, vars.fromColumnId, vars.toColumnId, vars.task),
+      );
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(["boards"], context.previous);
+      }
+    },
+    onSuccess: (data, vars) => {
+      queryClient.setQueryData(["boards"], (oldData) =>
+        moveTaskInState(oldData, vars.fromColumnId, vars.toColumnId, data),
+      );
     },
   });
 

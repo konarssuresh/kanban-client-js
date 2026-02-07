@@ -57,14 +57,9 @@ const Column = ({ column }) => {
               fromColumnId: fromColumnId,
               toColumnId: toColumnId,
               taskId: source.data._id,
+              task: source.data,
             },
-            {
-              onSuccess: (data) => {
-                queryClient.setQueryData(["boards"], (oldData) =>
-                  moveTaskInState(oldData, fromColumnId, toColumnId, data),
-                );
-              },
-            },
+            undefined,
           );
         }
         setIsElementBeingDragged(false);
