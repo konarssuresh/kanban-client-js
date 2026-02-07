@@ -3,9 +3,13 @@ import EmptyBoard from "./empty-board";
 import Column from "./column";
 import AddColumn from "./add-column";
 import { useBoardStore } from "../../../../store/useBoardStore";
+import { useFetchBoardsQuery } from "../../hooks/useFetchBoardsQuery";
+import { selectBoardView } from "../../../../store/boardEntities";
 
 const Content = () => {
-  const { selectedBoard } = useBoardStore();
+  const { data: boardsState } = useFetchBoardsQuery();
+  const { selectedBoardId } = useBoardStore();
+  const selectedBoard = selectBoardView(boardsState, selectedBoardId);
   const contentContainer = clsx({
     "w-full h-full overflow-auto bg-grey-100": true,
     // text classes

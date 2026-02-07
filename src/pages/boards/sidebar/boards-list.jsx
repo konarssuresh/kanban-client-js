@@ -1,24 +1,25 @@
 import { clsx } from "clsx";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useEffect } from "react";
 
 import IconBoard from "../../../common-components/icons/IconBoard";
 import { useFetchBoardsQuery } from "../hooks/useFetchBoardsQuery";
 import { useBoardStore } from "../../../store/useBoardStore";
-import { useEffect } from "react";
 import { showDialog } from "../../../common-components/dialog-container";
 import AddNewBoardDialog from "./add-new-board-dialog";
+import { selectBoardList } from "../../../store/boardEntities";
 
 const BoardsList = () => {
-  const queryClient = useQueryClient();
-  const { data: boards, isLoading } = useFetchBoardsQuery();
-  const { selectedBoard, setSelectedBoard } = useBoardStore();
+  const { data: boardsState, isLoading } = useFetchBoardsQuery();
+  const boards = useMemo(() => selectBoardList(boardsState), [boardsState]);
+  const { selectedBoardId, setSelectedBoardId, setSelectedTaskId } =
+    useBoardStore();
 
   useEffect(() => {
-    if (selectedBoard === null && boards?.length > 0) {
-      setSelectedBoard(boards[0]);
+    if (!selectedBoardId && boards?.length > 0) {
+      setSelectedBoardId(boards[0].id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [boards?.length, selectedBoard, setSelectedBoard]);
+  }, [boards?.length, selectedBoardId, setSelectedBoardId]);
 
   const listContainer = clsx({
     "grow flex flex-col ": true,
@@ -33,7 +34,7 @@ const BoardsList = () => {
     return clsx({
       "cursor-pointer": true,
       "px-6 py-4 mr-4 rounded-tr-full rounded-br-full": true,
-      "bg-purple-700 text-white": board?.id === selectedBoard?.id,
+      "bg-purple-700 text-white": board?.id === selectedBoardId,
       "text-md text-grey-400 hover:bg-purple-500 hover:text-white": true,
     });
   };
@@ -49,21 +50,15 @@ const BoardsList = () => {
   };
 
   const handleBoardChange = (board) => {
-    if (selectedBoard !== null) {
-      queryClient.setQueryData(["boards"], (oldData) => {
-        return Array.isArray(oldData)
-          ? oldData.map((b) => (b?.id === selectedBoard.id ? selectedBoard : b))
-          : oldData;
-      });
-    }
-    setSelectedBoard(board);
+    setSelectedBoardId(board.id);
+    setSelectedTaskId(null);
   };
 
   return (
     <div className={listContainer}>
       <div className={headingClasses}>
         <h6>ALL BOARDS</h6>
-        <h6>{!isLoading ? ` (${boards.length})` : ""}</h6>
+        <h6>{!isLoading ? ` (${boards?.length ?? 0})` : ""}</h6>
       </div>
 
       {boards?.map((board) => {

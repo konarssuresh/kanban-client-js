@@ -1,15 +1,13 @@
 import { clsx } from "clsx";
-import { map } from "lodash";
 import { useQueryClient } from "@tanstack/react-query";
 import { ModalDialog } from "../../../../common-components/dialog";
 
 import { useDeleteColumnMutation } from "../../hooks/useDeleteColumnMutation";
 
-import { useBoardStore } from "../../../../store/useBoardStore";
+import { removeColumnFromState } from "../../../../store/boardEntities";
 
 const DeleteColumnDialog = ({ onClose, columnData }) => {
   const queryClient = useQueryClient();
-  const { selectedBoard, setSelectedBoard } = useBoardStore();
   const { mutate, isLoading } = useDeleteColumnMutation({
     boardId: columnData.board,
     columnId: columnData._id,
@@ -18,22 +16,9 @@ const DeleteColumnDialog = ({ onClose, columnData }) => {
   const handleDelete = () => {
     mutate(undefined, {
       onSuccess: () => {
-        // Update the selected board in the store
-        const updatedColumns = map(selectedBoard.columns, (column) => {
-          if (column._id !== columnData._id) {
-            return column;
-          }
-          return null;
-        }).filter(Boolean);
-        const updatedBoard = { ...selectedBoard, columns: updatedColumns };
-        setSelectedBoard(updatedBoard);
-        queryClient.setQueryData(["boards"], (oldData) => {
-          return Array.isArray(oldData)
-            ? oldData.map((board) =>
-                board?.id === selectedBoard.id ? updatedBoard : board,
-              )
-            : oldData;
-        });
+        queryClient.setQueryData(["boards"], (oldData) =>
+          removeColumnFromState(oldData, columnData.board, columnData._id),
+        );
         onClose();
       },
     });
@@ -67,7 +52,7 @@ const DeleteColumnDialog = ({ onClose, columnData }) => {
     >
       <div className={dialogContentClasses}>
         <p>
-          Are you sure you want to delete the '{columnData.title}' column? This
+          Are you sure you want to delete the '{columnData.name}' column? This
           action cannot be undone and will remove all tasks within this column.
         </p>
       </div>

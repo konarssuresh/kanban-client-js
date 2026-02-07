@@ -6,10 +6,14 @@ import IconVerticalEllipsis from "../../../common-components/icons/IconVerticalE
 import { showDialog } from "../../../common-components/dialog-container";
 import { Button } from "../../../common-components/button";
 import AddTaskDialog from "../board-content/add-task-dialog";
+import { useFetchBoardsQuery } from "../hooks/useFetchBoardsQuery";
+import { selectBoardView } from "../../../store/boardEntities";
 
 const Header = () => {
   const { sidebarOpen } = useAppStore();
-  const { selectedBoard } = useBoardStore();
+  const { data: boardsState } = useFetchBoardsQuery();
+  const { selectedBoardId } = useBoardStore();
+  const selectedBoard = selectBoardView(boardsState, selectedBoardId);
   const headerClasses = clsx({
     "h-20 w-full border-b border-grey-400": true,
     "flex items-center justify-between p-4": true,
@@ -31,6 +35,9 @@ const Header = () => {
   });
 
   const handleAddTask = () => {
+    if (!selectedBoard) {
+      return;
+    }
     const closeDialog = showDialog(
       <AddTaskDialog
         board={selectedBoard}
@@ -49,7 +56,12 @@ const Header = () => {
       </div>
 
       <div className={addTaskContainer}>
-        <Button onClick={handleAddTask} variant="primary" size="large">
+        <Button
+          onClick={handleAddTask}
+          variant="primary"
+          size="large"
+          disabled={!selectedBoard}
+        >
           + Add New Task
         </Button>
         <IconVerticalEllipsis className="text-grey-400" />

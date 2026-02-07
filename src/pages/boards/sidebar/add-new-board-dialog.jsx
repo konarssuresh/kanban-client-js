@@ -8,9 +8,12 @@ import { ModalDialog } from "../../../common-components/dialog";
 import { Button } from "../../../common-components/button";
 import { TextField } from "../../../common-components/text-field";
 import { FieldArray } from "../../../common-components/field-array";
+import { addBoardToState } from "../../../store/boardEntities";
+import { useBoardStore } from "../../../store/useBoardStore";
 
 const AddNewBoardDialog = ({ onClose }) => {
   const queryClient = useQueryClient();
+  const { setSelectedBoardId } = useBoardStore();
   const form = useForm({
     defaultValues: {
       name: "",
@@ -37,9 +40,11 @@ const AddNewBoardDialog = ({ onClose }) => {
     };
     mutate(reqObj, {
       onSuccess: (resp) => {
-        queryClient.setQueryData(["boards"], (oldData) => {
-          return [...oldData, resp];
-        });
+        queryClient.setQueryData(["boards"], (oldData) =>
+          addBoardToState(oldData, resp),
+        );
+        const boardId = resp?.id || resp?._id;
+        if (boardId) setSelectedBoardId(boardId);
         onClose();
       },
     });

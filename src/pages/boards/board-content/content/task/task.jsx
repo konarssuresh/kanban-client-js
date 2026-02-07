@@ -9,7 +9,7 @@ import IconCross from "../../../../../common-components/icons/IconCross";
 import DeleteTaskDialog from "./delete-task-dialog";
 
 const Task = ({ task }) => {
-  const { setSelectedTask } = useBoardStore();
+  const { setSelectedTaskId } = useBoardStore();
   const [isDragging, setIsDragging] = useState(false);
   const taskContainerRef = useRef(null);
   const taskContainer = clsx({
@@ -55,7 +55,7 @@ const Task = ({ task }) => {
   }, 0);
 
   const handleClick = () => {
-    setSelectedTask(task);
+    setSelectedTaskId(task._id || task.id);
     const closeDialog = showDialog(
       <TaskDialog
         taskData={task}

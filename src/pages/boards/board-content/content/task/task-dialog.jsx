@@ -1,11 +1,23 @@
 import { clsx } from "clsx";
-import { map } from "lodash";
+import { useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ModalDialog } from "../../../../../common-components/dialog";
 import { useUpdateSubtaskMutation } from "../../../hooks/updateSubtaskMutation";
 import { useBoardStore } from "../../../../../store/useBoardStore";
+import { useFetchBoardsQuery } from "../../../hooks/useFetchBoardsQuery";
+import { selectTaskView, updateSubtaskInState } from "../../../../../store/boardEntities";
 
 const Subtask = ({ subtask }) => {
-  const { selectedTask: taskData, setSelectedTask } = useBoardStore();
+  const queryClient = useQueryClient();
+  const { data: boardsState } = useFetchBoardsQuery();
+  const { selectedTaskId } = useBoardStore();
+  const taskData = useMemo(
+    () => selectTaskView(boardsState, selectedTaskId),
+    [boardsState, selectedTaskId],
+  );
+  if (!taskData) {
+    return null;
+  }
   const { mutate } = useUpdateSubtaskMutation({
     boardId: taskData.board,
     columnId: taskData.column,
@@ -15,23 +27,15 @@ const Subtask = ({ subtask }) => {
 
   const handleChange = (e) => {
     const isDone = e.target.checked;
-
-    const updatedSubtasks = map(taskData.subtasks, (st) => {
-      if (st._id === subtask._id) {
-        return { ...st, isDone };
-      } else {
-        return st;
-      }
-    });
-
-    // optimistically update the selected task's subtasks
-    setSelectedTask({ ...taskData, subtasks: updatedSubtasks });
+    const previousState = queryClient.getQueryData(["boards"]);
+    queryClient.setQueryData(["boards"], (oldData) =>
+      updateSubtaskInState(oldData, subtask._id, isDone),
+    );
     mutate(
       { isDone },
       {
         onError: () => {
-          // revert optimistic update on error
-          setSelectedTask(taskData);
+          queryClient.setQueryData(["boards"], previousState);
         },
       },
     );
@@ -53,12 +57,15 @@ const Subtask = ({ subtask }) => {
 };
 
 const TaskDialog = ({ onClose }) => {
-  const {
-    selectedTask: taskData,
-    setSelectedTask,
-    selectedBoard,
-    setSelectedBoard,
-  } = useBoardStore();
+  const { data: boardsState } = useFetchBoardsQuery();
+  const { selectedTaskId, setSelectedTaskId } = useBoardStore();
+  const taskData = useMemo(
+    () => selectTaskView(boardsState, selectedTaskId),
+    [boardsState, selectedTaskId],
+  );
+  if (!taskData) {
+    return null;
+  }
   const { title, description, subtasks = [] } = taskData || {};
 
   const descriptionClasses = clsx({
@@ -78,17 +85,7 @@ const TaskDialog = ({ onClose }) => {
   }, 0);
 
   const handleClose = () => {
-    const updatedColumns = (selectedBoard.columns || []).map((col) => {
-      if (col._id !== taskData.column) return col;
-      return {
-        ...col,
-        tasks: (col.tasks || []).map((t) =>
-          t._id === taskData._id ? taskData : t,
-        ),
-      };
-    });
-    setSelectedBoard({ ...selectedBoard, columns: updatedColumns });
-    setSelectedTask(null);
+    setSelectedTaskId(null);
     onClose();
   };
 

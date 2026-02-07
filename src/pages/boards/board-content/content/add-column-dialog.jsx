@@ -4,13 +4,12 @@ import { clsx } from "clsx";
 import isEmpty from "lodash/isEmpty";
 
 import { useAddColumnMutation } from "../../hooks/useAddColumnMutation";
-import { useBoardStore } from "../../../../store/useBoardStore";
 import { ModalDialog } from "../../../../common-components/dialog";
 import { TextField } from "../../../../common-components/text-field";
 import { Button } from "../../../../common-components/button";
+import { addColumnToState } from "../../../../store/boardEntities";
 
 const AddColumnDialog = ({ onClose, board }) => {
-  const { selectedBoard, setSelectedBoard } = useBoardStore();
   const queryClient = useQueryClient();
   const { control, formState, getValues } = useForm({
     defaultValues: {
@@ -31,21 +30,9 @@ const AddColumnDialog = ({ onClose, board }) => {
 
     mutate(reqObj, {
       onSuccess: (resp) => {
-        queryClient.setQueryData(["boards"], (oldData) => {
-          return oldData.map((b) => {
-            if (b.id === board.id) {
-              return {
-                ...b,
-                columns: [...b.columns, resp],
-              };
-            }
-            return b;
-          });
-        });
-        setSelectedBoard({
-          ...selectedBoard,
-          columns: [...selectedBoard.columns, resp],
-        });
+        queryClient.setQueryData(["boards"], (oldData) =>
+          addColumnToState(oldData, board.id, resp),
+        );
         onClose();
       },
     });

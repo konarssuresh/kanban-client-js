@@ -4,16 +4,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import isEmpty from "lodash/isEmpty";
 
 import { useAddTaskMutation } from "../hooks/useAddTaskMutation";
-import { useBoardStore } from "../../../store/useBoardStore";
 import { ModalDialog } from "../../../common-components/dialog";
 import { TextField } from "../../../common-components/text-field";
 import { Button } from "../../../common-components/button";
 import { FieldArray } from "../../../common-components/field-array";
 import { Select } from "../../../common-components/select";
+import { addTaskToState } from "../../../store/boardEntities";
 
 const AddTaskDialog = ({ onClose, board }) => {
   const queryClient = useQueryClient();
-  const { setSelectedBoard } = useBoardStore();
+
   const modalContainerClasses = clsx({
     "flex flex-col gap-4 w-120": true,
   });
@@ -27,6 +27,10 @@ const AddTaskDialog = ({ onClose, board }) => {
     },
     mode: "all",
   });
+
+  if (!board) {
+    return null;
+  }
   const { control, formState, getValues } = form;
 
   const { errors, isDirty } = formState;
@@ -44,34 +48,9 @@ const AddTaskDialog = ({ onClose, board }) => {
 
     mutate(req, {
       onSuccess: (resp, r) => {
-        queryClient.setQueryData(["boards"], (oldData) => {
-          return oldData.map((b) => {
-            if (b.id === board.id) {
-              return {
-                ...b,
-                columns: b.columns.map((col) => {
-                  if (col.id === r.status) {
-                    const tasks = [...col.tasks, resp];
-                    return { ...col, tasks: tasks };
-                  }
-                  return { ...col };
-                }),
-              };
-            }
-            return b;
-          });
-        });
-
-        setSelectedBoard({
-          ...board,
-          columns: board.columns.map((col) => {
-            if (col.id === r.status) {
-              const tasks = [...col.tasks, resp];
-              return { ...col, tasks: tasks };
-            }
-            return { ...col };
-          }),
-        });
+        queryClient.setQueryData(["boards"], (oldData) =>
+          addTaskToState(oldData, r.status, resp),
+        );
 
         onClose();
       },

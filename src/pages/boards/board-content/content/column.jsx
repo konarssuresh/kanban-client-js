@@ -1,17 +1,15 @@
 import { clsx } from "clsx";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import compact from "lodash/compact";
 import Task from "./task/task";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useMoveTaskMutation } from "../../hooks/useMoveTaskMutation";
-import { useBoardStore } from "../../../../store/useBoardStore";
 import IconVerticalEllipsis from "../../../../common-components/icons/IconVerticalEllipsis";
 import { showDialog } from "../../../../common-components/dialog-container";
 import DeleteColumnDialog from "./delete-column-dialog";
+import { moveTaskInState } from "../../../../store/boardEntities";
 
 const Column = ({ column }) => {
-  const { setSelectedBoard } = useBoardStore();
   const queryClient = useQueryClient();
   const columnsContainerRef = useRef();
   const [isElementBeingDragged, setIsElementBeingDragged] = useState(false);
@@ -62,32 +60,9 @@ const Column = ({ column }) => {
             },
             {
               onSuccess: (data) => {
-                queryClient.setQueryData(["boards"], (oldData) => {
-                  const newData = oldData.map((b) => {
-                    if (b.id === data.board) {
-                      const newColumns = b.columns.map((c) => {
-                        if (c.id === fromColumnId) {
-                          let filteredTasks = [...c.tasks];
-                          filteredTasks = filteredTasks.filter(
-                            (t) => t._id !== data._id,
-                          );
-                          return { ...c, tasks: filteredTasks };
-                        } else if (c.id === toColumnId) {
-                          let newTasks = [...c.tasks, data];
-                          return { ...c, tasks: newTasks };
-                        } else {
-                          return { ...c };
-                        }
-                      });
-                      setSelectedBoard({ ...b, columns: compact(newColumns) });
-                      return { ...b, columns: compact(newColumns) };
-                    }
-
-                    return { ...b };
-                  });
-
-                  return [...newData];
-                });
+                queryClient.setQueryData(["boards"], (oldData) =>
+                  moveTaskInState(oldData, fromColumnId, toColumnId, data),
+                );
               },
             },
           );
@@ -103,7 +78,7 @@ const Column = ({ column }) => {
     });
 
     return cleanup;
-  }, [column, mutate, setSelectedBoard]);
+  }, [column, mutate, queryClient]);
 
   const handleDeleteColumn = () => {
     const closeDialog = showDialog(

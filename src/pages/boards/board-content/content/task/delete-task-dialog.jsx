@@ -1,15 +1,13 @@
 import { clsx } from "clsx";
-import { map } from "lodash";
 import { useQueryClient } from "@tanstack/react-query";
 import { ModalDialog } from "../../../../../common-components/dialog";
 
 import { useDeleteTaskMutation } from "../../../hooks/useDeleteTaskMutation";
 
-import { useBoardStore } from "../../../../../store/useBoardStore";
+import { removeTaskFromState } from "../../../../../store/boardEntities";
 
 const DeleteTaskDialog = ({ onClose, taskData }) => {
   const queryClient = useQueryClient();
-  const { selectedBoard, setSelectedBoard } = useBoardStore();
   const { mutate, isLoading } = useDeleteTaskMutation({
     boardId: taskData.board,
     columnId: taskData.column,
@@ -19,25 +17,9 @@ const DeleteTaskDialog = ({ onClose, taskData }) => {
   const handleDelete = () => {
     mutate(undefined, {
       onSuccess: () => {
-        // Update the selected board in the store
-        const updatedColumns = map(selectedBoard.columns, (column) => {
-          if (column._id === taskData.column) {
-            return {
-              ...column,
-              tasks: column.tasks.filter((task) => task._id !== taskData._id),
-            };
-          }
-          return column;
-        });
-        const updatedBoard = { ...selectedBoard, columns: updatedColumns };
-        setSelectedBoard(updatedBoard);
-        queryClient.setQueryData(["boards"], (oldData) => {
-          return Array.isArray(oldData)
-            ? oldData.map((board) =>
-                board?.id === selectedBoard.id ? updatedBoard : board,
-              )
-            : oldData;
-        });
+        queryClient.setQueryData(["boards"], (oldData) =>
+          removeTaskFromState(oldData, taskData.column, taskData._id),
+        );
         onClose();
       },
     });
